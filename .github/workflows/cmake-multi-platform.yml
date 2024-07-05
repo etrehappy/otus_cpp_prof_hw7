@@ -27,19 +27,19 @@ jobs:
   
   build:
     needs: create_release
-    runs-on: ${{ bulk.os }}
+    runs-on: ${{ matrix.os }}
 
     strategy:
-      # Set fail-fast to false to ensure that feedback is delivered for all bulk combinations. Consider changing this to true when your workflow is stable.
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
       fail-fast: false
 
-      # Set up a bulk to run the following 3 configurations:
+      # Set up a matrix to run the following 3 configurations:
       # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
       # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
       # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
-      bulk:
+      matrix:
         os: [ubuntu-latest,  macos-latest, windows-latest]
         build_type: [Release]
         include:
@@ -68,17 +68,17 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ bulk.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ bulk.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ bulk.build_type }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -S ${{ github.workspace }}/source
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ bulk.build_type }}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
         
     - name: Upload Release Asset Ubuntu
-      if: ${{ success() && bulk.os == 'ubuntu-latest' }}    
+      if: ${{ success() && matrix.os == 'ubuntu-latest' }}    
       id: upload-release-asset-ubuntu
       uses: actions/upload-release-asset@v1
       env:
@@ -86,11 +86,11 @@ jobs:
       with:
         upload_url: ${{ needs.create_release.outputs.upload_url }}
         asset_path: ${{ steps.strings.outputs.build-output-dir }}/bulk
-        asset_name: bulk-${{ bulk.os }}-0.0.${{ github.run_number }}
+        asset_name: bulk-${{ matrix.os }}-0.0.${{ github.run_number }}
         asset_content_type: application/vnd.debian.binary-package
 
     - name: Upload Release Asset Windows
-      if: ${{ success() && bulk.os == 'windows-latest' }}
+      if: ${{ success() && matrix.os == 'windows-latest' }}
       id: upload-release-asset-windows
       uses: actions/upload-release-asset@v1
       env:
@@ -98,11 +98,11 @@ jobs:
       with:
         upload_url: ${{ needs.create_release.outputs.upload_url }}
         asset_path: ${{ steps.strings.outputs.build-output-dir }}/Release/bulk.exe
-        asset_name: bulk-${{ bulk.os }}-0.0.${{ github.run_number }}.exe
+        asset_name: bulk-${{ matrix.os }}-0.0.${{ github.run_number }}.exe
         asset_content_type: application/x-msdownload
 
     - name: Upload Release Asset MacOS
-      if: ${{ success() && bulk.os == 'macos-latest' }}     
+      if: ${{ success() && matrix.os == 'macos-latest' }}     
       id: upload-release-asset-macos
       uses: actions/upload-release-asset@v1
       env:
@@ -110,5 +110,5 @@ jobs:
       with:
         upload_url: ${{ needs.create_release.outputs.upload_url }}
         asset_path: ${{ steps.strings.outputs.build-output-dir }}/bulk
-        asset_name: bulk-${{ bulk.os }}-0.0.${{ github.run_number }}
+        asset_name: bulk-${{ matrix.os }}-0.0.${{ github.run_number }}
         asset_content_type: application/octet-stream
