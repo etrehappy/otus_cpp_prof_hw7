@@ -5,6 +5,7 @@ project(bulk_prj)
 set(main_files 
     main.cpp
     m_exceptions.h
+    observer.h
 )
 set(Parser
     parser.cpp
@@ -14,6 +15,7 @@ set(CommandReader
     cmd_reader.cpp
     cmd_reader.h
 )
+
 
 add_executable(bulk ${main_files} ${Parser} ${CommandReader})
 

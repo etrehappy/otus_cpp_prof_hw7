@@ -1,13 +1,13 @@
-﻿#include "parser.h"
+#include "parser.h"
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 #include <filesystem>
 
-Parser::Parser()
+Parser::Parser(std::ostream& output)
     :start_dynamic_counter_{0}, end_dynamic_counter_{0}, 
     start_dynamic_symbol_{"{"}, end_dynamic_symbol_{"}"},
-    commands_{}
+    commands_{}, output_(output)
 {
 }
 
@@ -42,6 +42,13 @@ void Parser::Analysis(std::vector<std::string>& strings, std::ostream& output,
     }
 
     RunCommands(output, bulk_time);
+}
+
+void Parser::Update(const std::vector<std::string>& commands,
+    std::chrono::system_clock::time_point bulk_time)
+{   
+    std::vector<std::string> cmds = commands;
+    Analysis(cmds, output_, bulk_time);
 }
 
 void Parser::RunCommands(std::ostream& output,

@@ -1,13 +1,14 @@
-﻿#pragma once
+#pragma once
 #include <vector>
 #include <string>
 #include <iostream>
 #include <thread> // for PrintForCheck()
 #include <chrono> 
 
+#include "observer.h"
 #include "m_exceptions.h"
 
-class CommandReader
+class CommandReader : public Subject
 {
 public:
 	CommandReader(size_t);
@@ -18,6 +19,9 @@ public:
 	bool IsEof() const;
 	std::chrono::system_clock::time_point GetBulkTime() const;		
 
+	void Attach(Observer* observer) override;
+	void Detach(Observer* observer) override;
+	void Notify() override;
 private:
 
 	void ClearState();
@@ -33,6 +37,8 @@ private:
 	std::vector<std::string> container_;
 	std::chrono::system_clock::time_point bulk_time_;
 	bool eof_flag_;
+
+	std::vector<Observer*> observers_;
 };
 
 

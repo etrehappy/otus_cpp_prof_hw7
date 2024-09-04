@@ -1,4 +1,4 @@
-﻿#include <string>
+#include <string>
 #include <iostream>
 #include <sstream>
 
@@ -25,14 +25,15 @@ size_t Treat_Arguments(int& argc, char** argv)
 void Start(size_t N, std::istream& input, std::ostream& output)
 {
     CommandReader reader{N};
-    Parser parser{};
+    Parser parser{output};
+
+    reader.Attach(&parser);
 
     while (!reader.IsEof())
     {
         try
         {
-            reader.Read(input);
-            parser.Analysis(reader.GetCommands(), output, reader.GetBulkTime());
+            reader.Read(input);            
         }
         catch (const UnknownCommand& ex)
         {

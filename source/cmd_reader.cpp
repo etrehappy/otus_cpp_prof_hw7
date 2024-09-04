@@ -1,9 +1,9 @@
-﻿#include "cmd_reader.h"
-
+#include "cmd_reader.h"
+#include <algorithm> 
 
 CommandReader::CommandReader(size_t N)
     :max_command_number_{N}, command_counter_{0}, container_{}, 
-    bulk_time_{}, eof_flag_{false}
+    bulk_time_{}, eof_flag_{false}, observers_{}
 {
     container_.resize(max_command_number_);
 }
@@ -32,6 +32,8 @@ void CommandReader::Read(std::istream& input)
     }   
 
     PrintForCheck();
+
+    Notify();
 }
 
 std::vector<std::string>& CommandReader::GetCommands()
@@ -48,6 +50,25 @@ std::chrono::system_clock::time_point CommandReader::GetBulkTime() const
 {
     return bulk_time_;
 }
+
+void CommandReader::Attach(Observer* observer)
+{
+    observers_.push_back(observer);
+}
+
+void CommandReader::Detach(Observer* observer)
+{
+    observers_.erase(std::remove(observers_.begin(), observers_.end(), observer), observers_.end());
+}
+
+void CommandReader::Notify()
+{
+    for (auto observer : observers_)
+    {
+        observer->Update(container_, bulk_time_);
+    }
+}
+
 
 void CommandReader::ClearState()
 {
